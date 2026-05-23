@@ -1,10 +1,24 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using TMPro;
 
 public class Driver : MonoBehaviour
 {
-    [SerializeField] float moveSpeed = 0.01f;
-    [SerializeField] float steerSpeed = 0.5f;
+    [SerializeField] float currentSpeed = 5f;
+    [SerializeField] float steerSpeed = 200f;
+    [SerializeField] float boostSpeed = 10f;
+    [SerializeField] float normalSpeed = 5f;
+    [SerializeField] float destroyPickupTimer;
+
+    [SerializeField] TMP_Text boostText;
+
+    bool boostActive;
+
+    void Start()
+    {
+        boostText.gameObject.SetActive(false);
+        boostActive = false;
+    }
 
     void Update()
     {
@@ -29,10 +43,28 @@ public class Driver : MonoBehaviour
             steer = -1;
         }
 
-        float moveAmount = moveSpeed * move * Time.deltaTime;
+        float moveAmount = currentSpeed * move * Time.deltaTime;
         float steerAmount = steerSpeed * steer * Time.deltaTime;
 
         transform.Translate(0, moveAmount, 0);
         transform.Rotate(0, 0, steerAmount);
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Boost") && !boostActive)
+        {
+            Destroy(collision.gameObject, destroyPickupTimer);
+            currentSpeed = boostSpeed;
+            boostText.gameObject.SetActive(true);
+            boostActive = true;
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {        
+        currentSpeed = normalSpeed;
+        boostText.gameObject.SetActive(false);
+        boostActive = false;
     }
 }
